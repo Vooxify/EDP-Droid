@@ -1,0 +1,11 @@
+{
+  "name": "edp-droid",
+  "version": "1.0.0",
+  "description": "The Droid of Ecole Directe Plus website",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "MATRISM :)",
+  "license": "ISC"
+}

@@ -13,10 +13,10 @@ module.exports = (client) => {
 
         const eventName = eventFolder.replace(/\\/g, "/").split("/").pop();
 
-        client.on(eventName, async (arg) => {
+        client.on(eventName, async (...arg) => {
             for (const eventFile of eventFiles) {
                 const eventFonction = require(eventFile);
-                await eventFonction(client, arg);
+                await eventFonction(client, ...arg);
             }
         });
     }

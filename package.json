@@ -9,6 +9,7 @@
   "author": "MATRISM :)",
   "license": "ISC",
   "dependencies": {
+    "abort-controller": "^3.0.0",
     "cli-chart": "^0.3.1",
     "cli-table3": "^0.6.5",
     "cors": "^2.8.5",

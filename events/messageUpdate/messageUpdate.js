@@ -1,4 +1,6 @@
 const { handleWebSocket } = require("../../utils/webServer");
+const { setDroidStatus } = require("../../handlers/setDroidStatus");
+const { ActivityType } = require("discord.js");
 
 const statisticsMessage = async (
     client,
@@ -10,6 +12,18 @@ const statisticsMessage = async (
     if (newMessage.channelId !== targetChannelId) return;
 
     const response = await handleWebSocket();
+
+    const handleVisitorsDate = (obj) => {
+        const todayAndYesterday = [];
+        for (const [key, value] of Object.entries(obj)) {
+            if (todayAndYesterday.length !== 2) {
+                todayAndYesterday.push({ [key]: value });
+            } else {
+                return todayAndYesterday;
+            }
+        }
+        return todayAndYesterday;
+    };
 
     const buildOSAndNumbersString = (data) => {
         // future in vocal salons
@@ -65,6 +79,10 @@ Fin du log : ${response.general.end_logging_date}
     Requêtes non trouvées : ${response.general.not_found_requests}
     Temps de génération : ${response.general.generation_time_ms}
 
+**Nombre de visiteurs :**
+    Aujourd'hui : ${Object.values(handleVisitorsDate(response.visitors)[0])}
+    Hier : ${Object.values(handleVisitorsDate(response.visitors)[1])}
+
 **Liens les plus visités :**
 ${response.top_visited_routes
     .map((route) => {
@@ -85,8 +103,13 @@ ${buildMostUsedOSString(response)}
 
     // console.dir(JSON.stringify(response), { depth: null });
     oldMessage.edit(finalMessage);
+    setDroidStatus(
+        client,
+        `Visites aujourd'hui : ${Object.values(handleVisitorsDate(response.visitors)[0])}`,
+        ActivityType.Custom
+    );
 };
 
 module.exports = async (client, oldMessage, newMessage) => {
-    statisticsMessage(client, oldMessage, newMessage, "1301816896269717546");
+    statisticsMessage(client, oldMessage, newMessage, "1302546910007263303");
 };

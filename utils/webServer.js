@@ -1,18 +1,26 @@
 const WebSocket = require("ws");
 require("dotenv").config({ path: "../.env" });
 
-const sortJSON = (parsedJSON) => {
-    const general = parsedJSON.general;
-    const visitors = parsedJSON.visitors;
-    const requests = parsedJSON.requests;
+// utils
+const formatDate = (dateStr) => {
+    const year = dateStr.slice(0, 4);
+    const month = dateStr.slice(4, 6);
+    const day = dateStr.slice(6, 8);
+    return `${day}/${month}/${year}`;
+};
+
+const sortJSON = async (parsedJSON) => {
+    const general = await parsedJSON.general;
+    const visitors = await parsedJSON.visitors;
+    const requests = await parsedJSON.requests;
     // const staticRequests = parsedJSON.static_requests;
-    const notFound = parsedJSON.not_found;
+    const notFound = await parsedJSON.not_found;
     // const hosts = parsedJSON.hosts;
-    const os = parsedJSON.os;
-    const browsers = parsedJSON.browsers;
-    const visitTime = parsedJSON.visit_time;
-    const referringSites = parsedJSON.referring_sites;
-    const statusCodes = parsedJSON.status_codes;
+    const os = await parsedJSON.os;
+    const browsers = await parsedJSON.browsers;
+    // const visitTime = await parsedJSON.visit_time;
+    const referringSites = await parsedJSON.referring_sites;
+    // const statusCodes = await parsedJSON.status_codes;
 
     const handleGeneral = () => {
         return {
@@ -29,25 +37,22 @@ const sortJSON = (parsedJSON) => {
             },
         };
     };
-    // const handleVisitors = () => {
-    //     const metadata = visitors.metadata;
+    const handleVisitors = () => {
+        const data = visitors.data;
 
-    //     const sortMetadata = {
-    //         visitors: {
-    //             total: metadata.visitors.total.value,
-    //             avg: metadata.visitors.avg.value,
-    //             max: metadata.visitors.max.value,
-    //             min: metadata.visitors.min.value,
-    //         },
-    //         hits: {
-    //             total: metadata.hits.total.value,
-    //             avg: metadata.hits.avg.value,
-    //             max: metadata.hits.max.value,
-    //             min: metadata.hits.min.value,
-    //         },
-    //     };
-    //     return sortMetadata;
-    // };
+        const sortMetadata = {};
+
+        data.map((element) => {
+            const date = formatDate(element.data);
+            const visitors = element.visitors.count;
+            sortMetadata[date] = visitors;
+        });
+
+        return {
+            visitors: sortMetadata,
+        };
+    };
+
     const handleRequests = () => {
         const metadata = requests.metadata;
         const data = requests.data;
@@ -60,12 +65,6 @@ const sortJSON = (parsedJSON) => {
         }
 
         const sortMetadata = {
-            visitors: {
-                total: metadata.visitors.total.value,
-                avg: metadata.visitors.avg.value,
-                max: metadata.visitors.max.value,
-                min: metadata.visitors.min.value,
-            },
             hits: {
                 total: metadata.hits.total.value,
                 avg: metadata.hits.avg.value,
@@ -182,7 +181,7 @@ const sortJSON = (parsedJSON) => {
 
     return {
         ...handleGeneral(),
-        // ...handleVisitors(),
+        ...handleVisitors(),
         ...handleRequests(),
         ...handleNotFound(),
         ...handleOS(),
@@ -206,7 +205,7 @@ const handleWebSocket = (url = process.env.SOCKET_URL) => {
                 const rawData = await event?.data;
                 const data = await JSON.parse(rawData);
 
-                const sortedObject = sortJSON(data);
+                const sortedObject = await sortJSON(data);
 
                 resolve(sortedObject);
             } catch (error) {

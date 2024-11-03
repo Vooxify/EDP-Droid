@@ -59,7 +59,7 @@ const statisticsMessage = async (
     };
     const buildMostUsedOSString = (data) => {
         const mostUsedOSData = data.mostUsedOS;
-        let result = "**Systèmes d'exploitation les plus utilisés :**\n";
+        let result = "\n";
 
         mostUsedOSData.forEach((item) => {
             result += `- ${item.name} avec ${item.visitors} utilisateurs\n`;
@@ -90,19 +90,66 @@ ${response.top_visited_routes
     })
     .join("\n")}
 
-**Liens les plus non trouvés :**
-    ${response.top_not_found_routes
-        .map((route) => {
-            return `- ${route}`;
-        })
-        .join("\n")}
-
 ${buildMostUsedOSString(response)}
 
 `;
 
+    const embed = {
+        color: 0x0099ff,
+        title: "Statistiques EcoleDirecte Plus",
+
+        description: "Les statisiques du site d'EcoleDirecte Plus",
+        fields: [
+            {
+                name: "**Infos :**",
+                value: `
+                        Démarrage du log : ${response.general.start_logging_date}
+                        Fin du log : ${response.general.end_logging_date}
+                        `,
+            },
+
+            {
+                name: "**Statistiques générales :**",
+                value: `Total des requêtes : ${response.general.total_requests}
+                        Requêtes valides : ${response.general.valid_requests}
+                        Requêtes invalides : ${response.general.invalid_requests}
+                        Requêtes non trouvées : ${response.general.not_found_requests}
+                        Temps de génération : ${response.general.generation_time_ms}`,
+            },
+
+            {
+                name: "**Nombre de visiteurs :**",
+                value: `
+                Aujourd'hui : ${Object.values(handleVisitorsDate(response.visitors)[0])}
+                        Hier : ${Object.values(handleVisitorsDate(response.visitors)[1])}`,
+                inline: false,
+            },
+
+            {
+                name: "**Liens les plus visités :**",
+                value: `
+                ${response.top_visited_routes
+                    .map((route) => {
+                        return `- ${route}`;
+                    })
+                    .join("\n")}
+                `,
+                inline: false,
+            },
+
+            {
+                name: "**Systèmes d'exploitation les plus utilisés :**",
+                value: `
+                ${buildMostUsedOSString(response)}`,
+                inline: false,
+            },
+        ],
+
+        timestamp: new Date().toISOString(),
+    };
+
     // console.dir(JSON.stringify(response), { depth: null });
-    oldMessage.edit(finalMessage);
+    oldMessage.edit({ embeds: [embed] });
     setDroidStatus(
         client,
         `Visites aujourd'hui : ${Object.values(handleVisitorsDate(response.visitors)[0])}`,
